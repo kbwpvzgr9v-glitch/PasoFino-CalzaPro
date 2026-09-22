@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>PasoFino — CalzaControl</title>
+
+<!-- PWA -->
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CalzaControl">
+<meta name="description" content="Sistema de gestión de inventario, consignaciones y ventas de calzado">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f172a'/%3E%3Ctext x='50' y='64' font-size='54' text-anchor='middle' fill='%2310b981' font-family='Arial' font-weight='bold'%3EP%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230f172a'/%3E%3Ctext x='50' y='64' font-size='54' text-anchor='middle' fill='%2310b981' font-family='Arial' font-weight='bold'%3EP%3C/text%3E%3C/svg%3E">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          base: '#0f172a',
+          panel: '#141f38',
+          panel2: '#182241',
+          border: '#243456',
+          emerald: { DEFAULT: '#10b981', dim: '#0d9668', soft: '#0f2f28' },
+          indigo: { DEFAULT: '#6366f1', dim: '#4f52d6', soft: '#1c1f45' },
+        },
+        fontFamily: {
+          display: ['Space Grotesk', 'sans-serif'],
+          sans: ['Inter', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  * { box-sizing: border-box; }
+  html, body { background:#0f172a; }
+  body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+  h1,h2,h3,.display { font-family: 'Space Grotesk', sans-serif; }
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #243456; border-radius: 8px; }
+  .tab-btn.active { color: #fff; border-color: #10b981; background: linear-gradient(180deg, rgba(16,185,129,0.14), rgba(16,185,129,0.02)); }
+  .tab-btn { transition: all .15s ease; }
+  input[type=number]::-webkit-inner-spin-button { opacity: 1; }
+  input, select { color-scheme: dark; }
+  .modal-backdrop { backdrop-filter: blur(4px); }
+  .size-cell input:focus { outline: none; box-shadow: 0 0 0 2px #10b981; }
+  .fade-in { animation: fadeIn .18s ease; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(4px);} to {opacity:1; transform: translateY(0);} }
+  .toast-in { animation: toastIn .25s cubic-bezier(.2,.8,.2,1); }
+  @keyframes toastIn { from { opacity:0; transform: translateY(10px) scale(.98);} to {opacity:1; transform: translateY(0) scale(1);} }
+  table.data-table th { position: sticky; top: 0; background: #141f38; z-index: 1; }
+  .scrollbar-thin::-webkit-scrollbar { height:6px; width:6px; }
+  .badge-dot::before { content:''; display:inline-block; width:6px; height:6px; border-radius:999px; margin-right:6px; }
+</style>
+</head>
+
+<body class="bg-base text-slate-200 min-h-screen pb-24 md:pb-0">
+
+<!-- ===================== TOP BAR ===================== -->
+<header class="sticky top-0 z-30 border-b border-border bg-base/95 backdrop-blur">
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald to-indigo flex items-center justify-center font-display font-bold text-base text-sm shrink-0">PF</div>
+      <div class="leading-tight">
+        <h1 class="font-display font-bold text-base sm:text-lg text-white tracking-tight">PasoFino</h1>
+        <p class="text-[11px] text-slate-400 -mt-0.5">CalzaControl</p>
+      </div>
+    </div>
+    <nav class="hidden md:flex items-center gap-1 bg-panel border border-border rounded-full p-1">
+      <button data-tab="dashboard" class="tab-btn active px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Panel</button>
+      <button data-tab="inventory" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Inventario</button>
+      <button data-tab="loans" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Préstamos</button>
+      <button data-tab="exhibitions" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Exhibiciones</button>
+      <button data-tab="sales" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Ventas</button>
+      <button data-tab="settings" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Config</button>
+    </nav>
+    <button id="addProductTopBtn" class="hidden sm:flex items-center gap-1.5 bg-emerald hover:bg-emerald-dim text-base font-semibold text-sm px-4 py-2 rounded-full transition">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Nuevo producto
+    </button>
+  </div>
+</header>
+
+<!-- ===================== MOBILE BOTTOM NAV ===================== -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-panel border-t border-border flex justify-around py-1.5 px-1">
+  <button data-tab="dashboard" class="tab-btn-mobile active flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-slate-400 text-[10px] font-medium w-full">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+    Panel
+  </button>
+  <button data-tab="inventory" class="tab-btn-mobile flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-slate-400 text-[10px] font-medium w-full">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/></svg>
+    Stock
+  </button>
+  <button data-tab="loans" class="tab-btn-mobile flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-slate-400 text-[10px] font-medium w-full">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Préstamos
+  </button>
+  <button data-tab="exhibitions" class="tab-btn-mobile flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-slate-400 text-[10px] font-medium w-full">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h20v14H2z"/><path d="M8 21h8M12 17v4"/></svg>
+    Vitrinas
+  </button>
+  <button data-tab="sales" class="tab-btn-mobile flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-slate-400 text-[10px] font-medium w-full">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Ventas
+  </button>
+</nav>
+
+<!-- ===================== MAIN ===================== -->
+<main class="max-w-7xl mx-auto px-4 md:px-6 py-6">
+
+  <!-- ---------- DASHBOARD ---------- -->
+  <section id="tab-dashboard" class="tab-panel fade-in">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h2 class="text-xl font-display font-bold text-white">Panel financiero</h2>
+        <p class="text-sm text-slate-400 mt-0.5">Resumen general del negocio en tiempo real</p>
+      </div>
+      <button id="addProductDashBtn" class="sm:hidden flex items-center gap-1.5 bg-emerald text-base font-semibold text-sm px-3.5 py-2 rounded-full">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo
+      </button>
+    </div>
+
+    <div id="kpiGrid" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6"></div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="lg:col-span-2 bg-panel border border-border rounded-2xl p-5">
+        <h3 class="font-display font-semibold text-white mb-1">Valor del inventario</h3>
+        <p class="text-xs text-slate-400 mb-4">Comparación entre costo y precio de venta del stock activo</p>
+        <div id="valueBars" class="space-y-4"></div>
+      </div>
+      <div class="bg-panel border border-border rounded-2xl p-5">
+        <h3 class="font-display font-semibold text-white mb-1">Distribución de pares</h3>
+        <p class="text-xs text-slate-400 mb-4">Dónde están tus pares ahora mismo</p>
+        <div id="distributionDonut"></div>
+      </div>
+    </div>
+
+    <div class="mt-4 bg-panel border border-border rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-display font-semibold text-white">Últimos movimientos</h3>
+      </div>
+      <div id="recentActivity" class="space-y-2 text-sm"></div>
+    </div>
+  </section>
+
+  <!-- ---------- INVENTORY ---------- -->
+  <section id="tab-inventory" class="tab-panel hidden">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div>
+        <h2 class="text-xl font-display font-bold text-white">Inventario</h2>
+        <p class="text-sm text-slate-400 mt-0.5">Catálogo de modelos y stock por talla</p>
+      </div>
+      <button id="addProductInvBtn" class="hidden sm:flex items-center gap-1.5 bg-emerald hover:bg-emerald-dim text-base font-semibold text-sm px-4 py-2 rounded-full transition self-start">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo producto
+      </button>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-3 mb-4">
+      <div class="relative flex-1">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="searchInput" type="text" placeholder="Buscar por marca, modelo o color..." class="w-full bg-panel border border-border rounded-xl pl-10 pr-3 py-2.5 text-sm placeholder-slate-500 focus:outline-none focus:border-emerald">
+      </div>
+      <select id="availFilter" class="bg-panel border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald">
+        <option value="all">Todos</option>
+        <option value="available">Con stock disponible</option>
+        <option value="none">Sin stock</option>
+      </select>
+    </div>
+
+    <div id="inventoryEmpty" class="hidden text-center py-16 border border-dashed border-border rounded-2xl">
+      <p class="text-slate-400 text-sm">Aún no hay productos registrados.</p>
+      <button onclick="openProductModal()" class="mt-3 text-emerald text-sm font-semibold hover:underline">Agregar el primero →</button>
+    </div>
+
+    <div id="inventoryList" class="grid grid-cols-1 gap-3"></div>
+  </section>
+
+  <!-- ---------- LOANS ---------- -->
+  <section id="tab-loans" class="tab-panel hidden">
+    <h2 class="text-xl font-display font-bold text-white mb-1">Préstamos / Consignaciones</h2>
+    <p class="text-sm text-slate-400 mb-4">Pares entregados a clientes o vendedores fuera del local</p>
+    <div id="loansEmpty" class="hidden text-center py-16 border border-dashed border-border rounded-2xl">
+      <p class="text-slate-400 text-sm">No hay préstamos activos ni registrados.</p>
+    </div>
+    <div id="loansList" class="grid grid-cols-1 gap-3"></div>
+  </section>
+
+  <!-- ---------- EXHIBITIONS ---------- -->
+  <section id="tab-exhibitions" class="tab-panel hidden">
+    <h2 class="text-xl font-display font-bold text-white mb-1">Exhibiciones</h2>
+    <p class="text-sm text-slate-400 mb-4">Muestrarios puestos en locales y vitrinas, por pie</p>
+    <div id="exhibitionsEmpty" class="hidden text-center py-16 border border-dashed border-border rounded-2xl">
+      <p class="text-slate-400 text-sm">No hay exhibiciones activas ni registradas.</p>
+    </div>
+    <div id="exhibitionsList" class="grid grid-cols-1 gap-3"></div>
+  </section>
+
+  <!-- ---------- SALES ---------- -->
+  <section id="tab-sales" class="tab-panel hidden">
+    <div class="flex items-center justify-between mb-1">
+      <h2 class="text-xl font-display font-bold text-white">Historial de ventas</h2>
+    </div>
+    <p class="text-sm text-slate-400 mb-4">Todas las ventas: directas, desde préstamos y desde exhibiciones</p>
+    <div id="salesSummary" class="grid grid-cols-3 gap-3 mb-4"></div>
+    <div id="salesEmpty" class="hidden text-center py-16 border border-dashed border-border rounded-2xl">
+      <p class="text-slate-400 text-sm">Todavía no se ha registrado ninguna venta.</p>
+    </div>
+    <div class="overflow-x-auto scrollbar-thin bg-panel border border-border rounded-2xl">
+      <table class="data-table w-full text-sm min-w-[720px]">
+        <thead>
+          <tr class="text-left text-slate-400 text-xs uppercase tracking-wide border-b border-border">
+            <th class="px-4 py-3 font-medium">Fecha</th>
+            <th class="px-4 py-3 font-medium">Producto</th>
+            <th class="px-4 py-3 font-medium">Talla</th>
+            <th class="px-4 py-3 font-medium">Origen</th>
+            <th class="px-4 py-3 font-medium text-right">Costo</th>
+            <th class="px-4 py-3 font-medium text-right">Venta</th>
+            <th class="px-4 py-3 font-medium text-right">Utilidad</th>
+            <th class="px-4 py-3 font-medium text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="salesTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ---------- SETTINGS ---------- -->
+  <section id="tab-settings" class="tab-panel hidden max-w-2xl">
+    <h2 class="text-xl font-display font-bold text-white mb-1">Configuración y respaldo</h2>
+    <p class="text-sm text-slate-400 mb-6">Tus datos se guardan automáticamente en este dispositivo</p>
+
+    <div class="bg-panel border border-border rounded-2xl p-5 mb-4">
+      <h3 class="font-display font-semibold text-white mb-1">Copia de seguridad</h3>
+      <p class="text-xs text-slate-400 mb-4">Exporta un archivo .json con toda tu base de datos, o restáurala en otro dispositivo.</p>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="exportBtn" class="flex items-center justify-center gap-2 bg-emerald hover:bg-emerald-dim text-base font-semibold text-sm px-4 py-2.5 rounded-xl transition">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Exportar copia de seguridad
+        </button>
+        <label class="flex items-center justify-center gap-2 bg-panel2 hover:bg-border border border-border text-slate-200 font-semibold text-sm px-4 py-2.5 rounded-xl transition cursor-pointer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Importar copia de seguridad
+          <input id="importInput" type="file" accept="application/json" class="hidden">
+        </label>
+      </div>
+    </div>
+
+    <div class="bg-panel border border-border rounded-2xl p-5 mb-4">
+      <h3 class="font-display font-semibold text-white mb-1">Instalar como app</h3>
+      <p class="text-xs text-slate-400">Esta aplicación funciona como PWA: desde el navegador móvil usa "Agregar a pantalla de inicio" para instalarla y usarla sin conexión.</p>
+    </div>
+
+    <div class="bg-panel2 border border-red-900/40 rounded-2xl p-5">
+      <h3 class="font-display font-semibold text-red-400 mb-1">Zona de riesgo</h3>
+      <p class="text-xs text-slate-400 mb-4">Esto borra permanentemente todos los productos, préstamos, exhibiciones y ventas guardados en este dispositivo.</p>
+      <button id="resetBtn" class="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/40 text-red-400 font-semibold text-sm px-4 py-2.5 rounded-xl transition">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+        Reiniciar sistema
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== MODAL ROOT ===================== -->
+<div id="modalRoot" class="fixed inset-0 z-50 hidden">
+  <div id="modalBackdrop" class="absolute inset-0 bg-black/60 modal-backdrop"></div>
+  <div class="relative h-full w-full flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div id="modalBody" class="fade-in bg-panel border border-border w-full sm:max-w-lg sm:rounded-2xl rounded-t-3xl max-h-[92vh] overflow-y-auto"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toastRoot" class="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none"></div>
+
+<script>
+/* =========================================================
+   PASOFINO — CalzaControl
+   Sistema de inventario, consignaciones y ventas de calzado
+   ========================================================= */
+
+const STORAGE_KEY = 'pasofino_data_v1';
+const SIZES = Array.from({length: 11}, (_, i) => 35 + i); // 35..45
+
+const DEFAULT_DATA = { products: [], loans: [], exhibitions: [], sales: [], nextId: 1 };
+
+let DATA = loadData();
+let currentTab = 'dashboard';
+
+/* ---------------- persistence ---------------- */
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return structuredClone(DEFAULT_DATA);
+    const parsed = JSON.parse(raw);
+    return {
+      products: parsed.products || [],
+      loans: parsed.loans || [],
+      exhibitions: parsed.exhibitions || [],
+      sales: parsed.sales || [],
+      nextId: parsed.nextId || 1,
+    };
+  } catch (e) {
+    console.error('Error cargando datos, iniciando vacío', e);
+    return structuredClone(DEFAULT_DATA);
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+  } catch (e) {
+    console.error('Error guardando datos', e);
+    showToast('No se pudo guardar. Espacio de almacenamiento lleno.', 'error');
+  }
+}
+
+function nextId() {
+  const id = DATA.nextId;
+  DATA.nextId += 1;
+  return id;
+}
+
+/* ---------------- helpers ---------------- */
+function money(n) {
+  n = Number(n) || 0;
+  return '$' + n.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }) + ' · ' +
+         d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+}
+function productLabel(p) {
+  return `${p.brand} ${p.model}${p.color ? ' — ' + p.color : ''}`;
+}
+function getProduct(id) { return DATA.products.find(p => p.id === id); }
+function totalStock(p) { return SIZES.reduce((s, sz) => s + (Number(p.sizes[sz]) || 0), 0); }
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function showToast(msg, type = 'success') {
+  const root = document.getElementById('toastRoot');
+  const colors = {
+    success: 'bg-emerald text-base',
+    error: 'bg-red-500 text-white',
+    info: 'bg-indigo text-white',
+  };
+  const el = document.createElement('div');
+  el.className = `toast-in pointer-events-auto ${colors[type] || colors.success} font-semibold text-sm px-4 py-2.5 rounded-full shadow-xl shadow-black/30`;
+  el.textContent = msg;
+  root.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .25s ease';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 250);
+  }, 2200);
+}
+
+/* ---------------- tabs ---------------- */
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  document.getElementById('tab-' + tab).classList.add('fade-in');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-btn-mobile').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-btn-mobile').forEach(b => {
+    if (b.dataset.tab === tab) { b.classList.add('text-emerald'); b.classList.remove('text-slate-400'); }
+    else { b.classList.remove('text-emerald'); b.classList.add('text-slate-400'); }
+  });
+  renderAll();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+document.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+/* ---------------- modal helpers ---------------- */
+function openModal(html) {
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalRoot').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modalRoot').classList.add('hidden');
+  document.getElementById('modalBody').innerHTML = '';
+  document.body.style.overflow = '';
+}
+document.getElementById('modalBackdrop').addEventListener('click', closeModal);
+
+function confirmAction(title, message, onConfirm, confirmLabel = 'Confirmar') {
+  openModal(`
+    <div class="p-6">
+      <h3 class="font-display font-bold text-lg text-white mb-2">${escapeHtml(title)}</h3>
+      <p class="text-sm text-slate-400 mb-6">${escapeHtml(message)}</p>
+      <div class="flex gap-3">
+        <button id="confirmCancelBtn" class="flex-1 bg-panel2 border border-border text-slate-200 font-semibold text-sm py-2.5 rounded-xl">Cancelar</button>
+        <button id="confirmOkBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold text-sm py-2.5 rounded-xl">${escapeHtml(confirmLabel)}</button>
+      </div>
+    </div>
+  `);
+  document.getElementById('confirmCancelBtn').onclick = closeModal;
+  document.getElementById('confirmOkBtn').onclick = () => { onConfirm(); closeModal(); };
+}
+
+/* =========================================================
+   PRODUCT MODAL (add / edit)
+   ========================================================= */
+function openProductModal(productId = null) {
+  const editing = productId ? getProduct(productId) : null;
+  const sizeInputs = SIZES.map(sz => `
+    <div class="size-cell">
+      <label class="block text-[10px] text-slate-500 text-center mb-1">T${sz}</label>
+      <input type="number" min="0" data-size="${sz}" value="${editing ? (editing.sizes[sz] || 0) : 0}"
+        class="w-full bg-panel2 border border-border rounded-lg text-center text-sm py-1.5 focus:border-emerald">
+    </div>
+  `).join('');
+
+  openModal(`
+    <div class="p-5 sm:p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-lg text-white">${editing ? 'Editar producto' : 'Nuevo producto'}</h3>
+        <button onclick="closeModal()" class="text-slate-500 hover:text-slate-300">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="productForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Marca</label>
+            <input required id="f_brand" value="${editing ? escapeHtml(editing.brand) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Nike">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Modelo</label>
+            <input required id="f_model" value="${editing ? escapeHtml(editing.model) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Air Force 1">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Colorway / Color</label>
+          <input id="f_color" value="${editing ? escapeHtml(editing.color || '') : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Blanco / Negro">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Costo de compra</label>
+            <input required type="number" min="0" id="f_cost" value="${editing ? editing.cost : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="0">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Precio de venta</label>
+            <input required type="number" min="0" id="f_price" value="${editing ? editing.price : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="0">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-2">Stock por talla</label>
+          <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">${sizeInputs}</div>
+        </div>
+        <div class="flex gap-3 pt-2">
+          ${editing ? `<button type="button" id="deleteProductBtn" class="px-4 py-2.5 rounded-xl border border-red-500/40 text-red-400 text-sm font-semibold">Eliminar</button>` : ''}
+          <button type="submit" class="flex-1 bg-emerald hover:bg-emerald-dim text-base font-semibold text-sm py-2.5 rounded-xl transition">
+            ${editing ? 'Guardar cambios' : 'Agregar producto'}
+          </button>
+        </div>
+      </form>
+    </div>
+  `);
+
+  document.getElementById('productForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const sizes = {};
+    document.querySelectorAll('#productForm [data-size]').forEach(inp => {
+      sizes[inp.dataset.size] = Math.max(0, parseInt(inp.value) || 0);
+    });
+    const payload = {
+      brand: document.getElementById('f_brand').value.trim(),
+      model: document.getElementById('f_model').value.trim(),
+      color: document.getElementById('f_color').value.trim(),
+      cost: Math.max(0, parseFloat(document.getElementById('f_cost').value) || 0),
+      price: Math.max(0, parseFloat(document.getElementById('f_price').value) || 0),
+      sizes,
+    };
+    if (editing) {
+      Object.assign(editing, payload);
+      showToast('Producto actualizado');
+    } else {
+      DATA.products.push({ id: nextId(), ...payload });
+      showToast('Producto agregado');
+    }
+    saveData();
+    closeModal();
+    renderAll();
+  });
+
+  if (editing) {
+    document.getElementById('deleteProductBtn').addEventListener('click', () => {
+      confirmAction('Eliminar producto', `¿Eliminar "${productLabel(editing)}" del inventario? Esta acción no se puede deshacer.`, () => {
+        DATA.products = DATA.products.filter(p => p.id !== editing.id);
+        saveData();
+        renderAll();
+        showToast('Producto eliminado', 'info');
+      }, 'Eliminar');
+    });
+  }
+}
+
+/* =========================================================
+   LOAN MODAL
+   ========================================================= */
+function openLoanModal(productId) {
+  const p = getProduct(productId);
+  const availableSizes = SIZES.filter(sz => (p.sizes[sz] || 0) > 0);
+  if (!availableSizes.length) { showToast('No hay stock disponible en ninguna talla', 'error'); return; }
+
+  openModal(`
+    <div class="p-5 sm:p-6">
+      <h3 class="font-display font-bold text-lg text-white mb-1">Prestar / Consignar</h3>
+      <p class="text-sm text-slate-400 mb-4">${escapeHtml(productLabel(p))}</p>
+      <form id="loanForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Talla</label>
+          <select id="l_size" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald">
+            ${availableSizes.map(sz => `<option value="${sz}">Talla ${sz} · stock: ${p.sizes[sz]}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Nombre del cliente / vendedor</label>
+          <input required id="l_client" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Ej: Juan Pérez">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Observaciones</label>
+          <textarea id="l_notes" rows="2" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Opcional"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-indigo hover:bg-indigo-dim text-white font-semibold text-sm py-2.5 rounded-xl transition">Registrar préstamo</button>
+      </form>
+    </div>
+  `);
+
+  document.getElementById('loanForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const size = parseInt(document.getElementById('l_size').value);
+    const client = document.getElementById('l_client').value.trim();
+    const notes = document.getElementById('l_notes').value.trim();
+    if ((p.sizes[size] || 0) <= 0) { showToast('Sin stock en esa talla', 'error'); return; }
+    p.sizes[size] -= 1;
+    DATA.loans.push({
+      id: nextId(), productId: p.id, size, client, notes,
+      date: new Date().toISOString(), status: 'active',
+    });
+    saveData();
+    closeModal();
+    renderAll();
+    showToast('Préstamo registrado');
+  });
+}
+
+/* =========================================================
+   EXHIBITION MODAL
+   ========================================================= */
+function openExhibitionModal(productId) {
+  const p = getProduct(productId);
+  const availableSizes = SIZES.filter(sz => (p.sizes[sz] || 0) > 0);
+  if (!availableSizes.length) { showToast('No hay stock disponible en ninguna talla', 'error'); return; }
+
+  openModal(`
+    <div class="p-5 sm:p-6">
+      <h3 class="font-display font-bold text-lg text-white mb-1">Exhibir en local</h3>
+      <p class="text-sm text-slate-400 mb-4">${escapeHtml(productLabel(p))}</p>
+      <form id="exhForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-2">Pie exhibido</label>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center justify-center gap-2 bg-panel2 border border-border rounded-lg py-2.5 text-sm cursor-pointer has-[:checked]:border-emerald has-[:checked]:text-emerald">
+              <input type="radio" name="e_foot" value="left" checked class="accent-emerald"> Pie izquierdo
+            </label>
+            <label class="flex items-center justify-center gap-2 bg-panel2 border border-border rounded-lg py-2.5 text-sm cursor-pointer has-[:checked]:border-emerald has-[:checked]:text-emerald">
+              <input type="radio" name="e_foot" value="right" class="accent-emerald"> Pie derecho
+            </label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Talla</label>
+          <select id="e_size" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald">
+            ${availableSizes.map(sz => `<option value="${sz}">Talla ${sz} · stock: ${p.sizes[sz]}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Local / Vitrina</label>
+          <input required id="e_location" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Ej: Local 1, Vitrina Principal">
+        </div>
+        <button type="submit" class="w-full bg-indigo hover:bg-indigo-dim text-white font-semibold text-sm py-2.5 rounded-xl transition">Registrar exhibición</button>
+      </form>
+    </div>
+  `);
+
+  document.getElementById('exhForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const size = parseInt(document.getElementById('e_size').value);
+    const foot = document.querySelector('input[name="e_foot"]:checked').value;
+    const location = document.getElementById('e_location').value.trim();
+    if ((p.sizes[size] || 0) <= 0) { showToast('Sin stock en esa talla', 'error'); return; }
+    p.sizes[size] -= 1;
+    DATA.exhibitions.push({
+      id: nextId(), productId: p.id, size, foot, location,
+      date: new Date().toISOString(), status: 'active',
+    });
+    saveData();
+    closeModal();
+    renderAll();
+    showToast('Exhibición registrada');
+  });
+}
+
+/* =========================================================
+   DIRECT SALE MODAL
+   ========================================================= */
+function openSellModal(productId) {
+  const p = getProduct(productId);
+  const availableSizes = SIZES.filter(sz => (p.sizes[sz] || 0) > 0);
+  if (!availableSizes.length) { showToast('No hay stock disponible en ninguna talla', 'error'); return; }
+
+  openModal(`
+    <div class="p-5 sm:p-6">
+      <h3 class="font-display font-bold text-lg text-white mb-1">Venta directa</h3>
+      <p class="text-sm text-slate-400 mb-4">${escapeHtml(productLabel(p))}</p>
+      <form id="sellForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Talla</label>
+          <select id="s_size" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald">
+            ${availableSizes.map(sz => `<option value="${sz}">Talla ${sz} · stock: ${p.sizes[sz]}</option>`).join('')}
+          </select>
+        </div>
+        <div class="bg-panel2 border border-border rounded-lg px-3 py-2.5 text-sm flex justify-between">
+          <span class="text-slate-400">Precio de venta</span>
+          <span class="font-semibold text-white">${money(p.price)}</span>
+        </div>
+        <button type="submit" class="w-full bg-emerald hover:bg-emerald-dim text-base font-semibold text-sm py-2.5 rounded-xl transition">Confirmar venta</button>
+      </form>
+    </div>
+  `);
+
+  document.getElementById('sellForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const size = parseInt(document.getElementById('s_size').value);
+    if ((p.sizes[size] || 0) <= 0) { showToast('Sin stock en esa talla', 'error'); return; }
+    p.sizes[size] -= 1;
+    registerSale(p, size, 'direct');
+    saveData();
+    closeModal();
+    renderAll();
+    showToast('Venta registrada');
+  });
+}
+
+function registerSale(product, size, source) {
+  DATA.sales.push({
+    id: nextId(),
+    productId: product.id,
+    size,
+    source, // 'direct' | 'loan' | 'exhibition'
+    date: new Date().toISOString(),
+    cost: product.cost,
+    price: product.price,
+    profit: product.price - product.cost,
+    brand: product.brand, model: product.model, color: product.color,
+  });
+}
+
+/* =========================================================
+   RENDER: DASHBOARD
+   ========================================================= */
+function renderDashboard() {
+  const totalPairs = DATA.products.reduce((s, p) => s + totalStock(p), 0);
+  const loanedActive = DATA.loans.filter(l => l.status === 'active').length;
+  const exhibitedActive = DATA.exhibitions.filter(x => x.status === 'active').length;
+  const valueCost = DATA.products.reduce((s, p) => s + totalStock(p) * p.cost, 0);
+  const valuePrice = DATA.products.reduce((s, p) => s + totalStock(p) * p.price, 0);
+  const totalSales = DATA.sales.reduce((s, x) => s + x.price, 0);
+  const netProfit = DATA.sales.reduce((s, x) => s + x.profit, 0);
+  const margin = totalSales > 0 ? (netProfit / totalSales) * 100 : 0;
+
+  const kpis = [
+    { label: 'Pares en inventario', value: totalPairs, sub: `${DATA.products.length} modelos`, color: 'emerald' },
+    { label: 'Prestados / consignados', value: loanedActive, sub: 'activos ahora', color: 'indigo' },
+    { label: 'En exhibición', value: exhibitedActive, sub: 'en locales', color: 'indigo' },
+    { label: 'Ganancia neta', value: money(netProfit), sub: `${margin.toFixed(1)}% margen`, color: 'emerald' },
+  ];
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <p class="text-[11px] text-slate-400 mb-1.5">${k.label}</p>
+      <p class="text-2xl font-display font-bold text-white">${k.value}</p>
+      <p class="text-[11px] text-${k.color} mt-1">${k.sub}</p>
+    </div>
+  `).join('');
+
+  const maxVal = Math.max(valuePrice, valueCost, 1);
+  document.getElementById('valueBars').innerHTML = `
+    <div>
+      <div class="flex justify-between text-xs mb-1.5"><span class="text-slate-400">Valor al costo</span><span class="font-semibold text-white">${money(valueCost)}</span></div>
+      <div class="h-2.5 bg-panel2 rounded-full overflow-hidden"><div class="h-full bg-indigo rounded-full" style="width:${(valueCost/maxVal*100).toFixed(1)}%"></div></div>
+    </div>
+    <div>
+      <div class="flex justify-between text-xs mb-1.5"><span class="text-slate-400">Valor al precio de venta</span><span class="font-semibold text-white">${money(valuePrice)}</span></div>
+      <div class="h-2.5 bg-panel2 rounded-full overflow-hidden"><div class="h-full bg-emerald rounded-full" style="width:${(valuePrice/maxVal*100).toFixed(1)}%"></div></div>
+    </div>
+    <div class="pt-2 border-t border-border flex justify-between text-xs">
+      <span class="text-slate-400">Ventas acumuladas</span>
+      <span class="font-semibold text-white">${money(totalSales)}</span>
+    </div>
+  `;
+
+  const activeStock = DATA.products.reduce((s, p) => s + totalStock(p), 0);
+  const distTotal = activeStock + loanedActive + exhibitedActive || 1;
+  const dist = [
+    { label: 'En bodega/tienda', val: activeStock, color: '#10b981' },
+    { label: 'Prestado', val: loanedActive, color: '#6366f1' },
+    { label: 'Exhibido', val: exhibitedActive, color: '#f59e0b' },
+  ];
+  document.getElementById('distributionDonut').innerHTML = dist.map(d => `
+    <div class="mb-3">
+      <div class="flex justify-between text-xs mb-1"><span class="badge-dot text-slate-300" style="--tw-content:''"><span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:${d.color};margin-right:6px;"></span>${d.label}</span><span class="text-slate-400">${d.val}</span></div>
+      <div class="h-1.5 bg-panel2 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:${(d.val/distTotal*100).toFixed(1)}%; background:${d.color}"></div></div>
+    </div>
+  `).join('');
+
+  const activity = [
+    ...DATA.sales.map(s => ({ date: s.date, text: `Venta: ${s.brand} ${s.model} T${s.size} (${sourceLabel(s.source)})`, tag: 'Venta', color: 'text-emerald' })),
+    ...DATA.loans.map(l => ({ date: l.date, text: `Préstamo a ${l.client}: ${productLabel(getProduct(l.productId) || {brand:'',model:'—'})} T${l.size}`, tag: 'Préstamo', color: 'text-indigo' })),
+    ...DATA.exhibitions.map(x => ({ date: x.date, text: `Exhibición en ${x.location}: ${productLabel(getProduct(x.productId) || {brand:'',model:'—'})} T${x.size}`, tag: 'Exhibición', color: 'text-amber-400' })),
+  ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+
+  document.getElementById('recentActivity').innerHTML = activity.length ? activity.map(a => `
+    <div class="flex items-center justify-between py-2 border-b border-border/60 last:border-0">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="text-[10px] font-semibold ${a.color} bg-panel2 px-2 py-0.5 rounded-full shrink-0">${a.tag}</span>
+        <span class="truncate text-slate-300">${escapeHtml(a.text)}</span>
+      </div>
+      <span class="text-[11px] text-slate-500 shrink-0 ml-2">${fmtDate(a.date)}</span>
+    </div>
+  `).join('') : `<p class="text-sm text-slate-500 text-center py-6">Sin movimientos todavía</p>`;
+}
+
+function sourceLabel(s) { return { direct: 'directa', loan: 'préstamo', exhibition: 'exhibición' }[s] || s; }
+
+/* =========================================================
+   RENDER: INVENTORY
+   ========================================================= */
+function renderInventory() {
+  const q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  const filter = document.getElementById('availFilter').value;
+
+  let list = DATA.products.filter(p => {
+    const matchesQ = !q || `${p.brand} ${p.model} ${p.color}`.toLowerCase().includes(q);
+    const stock = totalStock(p);
+    const matchesFilter = filter === 'all' || (filter === 'available' && stock > 0) || (filter === 'none' && stock === 0);
+    return matchesQ && matchesFilter;
+  });
+
+  document.getElementById('inventoryEmpty').classList.toggle('hidden', DATA.products.length !== 0);
+  document.getElementById('inventoryList').innerHTML = list.map(p => {
+    const stock = totalStock(p);
+    const sizesWithStock = SIZES.filter(sz => (p.sizes[sz] || 0) > 0);
+    return `
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h4 class="font-display font-semibold text-white">${escapeHtml(p.brand)} ${escapeHtml(p.model)}</h4>
+            ${p.color ? `<span class="text-xs text-slate-400">${escapeHtml(p.color)}</span>` : ''}
+          </div>
+          <div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
+            <span>Costo ${money(p.cost)}</span>
+            <span>·</span>
+            <span>Venta ${money(p.price)}</span>
+            <span>·</span>
+            <span class="${stock > 0 ? 'text-emerald' : 'text-red-400'} font-medium">${stock} disponibles</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-1.5 shrink-0">
+          <button onclick="openSellModal(${p.id})" class="px-3 py-1.5 rounded-lg bg-emerald/10 text-emerald border border-emerald/30 text-xs font-semibold hover:bg-emerald/20">Vender</button>
+          <button onclick="openLoanModal(${p.id})" class="px-3 py-1.5 rounded-lg bg-indigo/10 text-indigo border border-indigo/30 text-xs font-semibold hover:bg-indigo/20">Prestar</button>
+          <button onclick="openExhibitionModal(${p.id})" class="px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-semibold hover:bg-amber-500/20">Exhibir</button>
+          <button onclick="openProductModal(${p.id})" class="px-3 py-1.5 rounded-lg bg-panel2 text-slate-300 border border-border text-xs font-semibold hover:bg-border">Editar</button>
+        </div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-border/60 flex flex-wrap gap-1.5">
+        ${sizesWithStock.length ? sizesWithStock.map(sz => `
+          <span class="text-[11px] bg-panel2 border border-border rounded-md px-2 py-1 text-slate-300">T${sz} <b class="text-white">${p.sizes[sz]}</b></span>
+        `).join('') : `<span class="text-[11px] text-slate-500">Sin stock en ninguna talla</span>`}
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+document.getElementById('searchInput').addEventListener('input', renderInventory);
+document.getElementById('availFilter').addEventListener('change', renderInventory);
+
+/* =========================================================
+   RENDER: LOANS
+   ========================================================= */
+function renderLoans() {
+  const items = [...DATA.loans].sort((a, b) => new Date(b.date) - new Date(a.date));
+  document.getElementById('loansEmpty').classList.toggle('hidden', items.length !== 0);
+  document.getElementById('loansList').innerHTML = items.map(l => {
+    const p = getProduct(l.productId) || { brand: '(eliminado)', model: '', color: '' };
+    const statusMap = { active: ['Activo', 'text-indigo bg-indigo/10 border-indigo/30'], sold: ['Vendido', 'text-emerald bg-emerald/10 border-emerald/30'], returned: ['Devuelto', 'text-slate-400 bg-panel2 border-border'] };
+    const [label, cls] = statusMap[l.status];
+    return `
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h4 class="font-display font-semibold text-white">${escapeHtml(productLabel(p))}</h4>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}">${label}</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">Talla ${l.size} · Cliente: <span class="text-slate-300">${escapeHtml(l.client)}</span></p>
+          ${l.notes ? `<p class="text-xs text-slate-500 mt-0.5">${escapeHtml(l.notes)}</p>` : ''}
+          <p class="text-[11px] text-slate-500 mt-1">${fmtDate(l.date)}</p>
+        </div>
+        ${l.status === 'active' ? `
+        <div class="flex gap-1.5 shrink-0">
+          <button onclick="loanAction(${l.id}, 'sold')" class="px-3 py-1.5 rounded-lg bg-emerald/10 text-emerald border border-emerald/30 text-xs font-semibold hover:bg-emerald/20">Vendido</button>
+          <button onclick="loanAction(${l.id}, 'returned')" class="px-3 py-1.5 rounded-lg bg-panel2 text-slate-300 border border-border text-xs font-semibold hover:bg-border">Devuelto</button>
+        </div>` : ''}
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+function loanAction(loanId, action) {
+  const l = DATA.loans.find(x => x.id === loanId);
+  const p = getProduct(l.productId);
+  if (action === 'sold') {
+    if (p) registerSale(p, l.size, 'loan');
+    l.status = 'sold';
+    showToast('Venta registrada desde préstamo');
+  } else if (action === 'returned') {
+    if (p) p.sizes[l.size] = (Number(p.sizes[l.size]) || 0) + 1;
+    l.status = 'returned';
+    showToast('Par devuelto al inventario', 'info');
+  }
+  saveData();
+  renderAll();
+}
+
+/* =========================================================
+   RENDER: EXHIBITIONS
+   ========================================================= */
+function renderExhibitions() {
+  const items = [...DATA.exhibitions].sort((a, b) => new Date(b.date) - new Date(a.date));
+  document.getElementById('exhibitionsEmpty').classList.toggle('hidden', items.length !== 0);
+  document.getElementById('exhibitionsList').innerHTML = items.map(x => {
+    const p = getProduct(x.productId) || { brand: '(eliminado)', model: '', color: '' };
+    const statusMap = { active: ['Activa', 'text-amber-400 bg-amber-500/10 border-amber-500/30'], sold: ['Vendido', 'text-emerald bg-emerald/10 border-emerald/30'], returned: ['Devuelto', 'text-slate-400 bg-panel2 border-border'] };
+    const [label, cls] = statusMap[x.status];
+    return `
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h4 class="font-display font-semibold text-white">${escapeHtml(productLabel(p))}</h4>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cls}">${label}</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">Talla ${x.size} · Pie ${x.foot === 'left' ? 'izquierdo' : 'derecho'} · <span class="text-slate-300">${escapeHtml(x.location)}</span></p>
+          <p class="text-[11px] text-slate-500 mt-1">${fmtDate(x.date)}</p>
+        </div>
+        ${x.status === 'active' ? `
+        <div class="flex gap-1.5 shrink-0">
+          <button onclick="exhAction(${x.id}, 'sold')" class="px-3 py-1.5 rounded-lg bg-emerald/10 text-emerald border border-emerald/30 text-xs font-semibold hover:bg-emerald/20">Vendido</button>
+          <button onclick="exhAction(${x.id}, 'returned')" class="px-3 py-1.5 rounded-lg bg-panel2 text-slate-300 border border-border text-xs font-semibold hover:bg-border">Devuelto</button>
+        </div>` : ''}
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+function exhAction(exhId, action) {
+  const x = DATA.exhibitions.find(i => i.id === exhId);
+  const p = getProduct(x.productId);
+  if (action === 'sold') {
+    if (p) registerSale(p, x.size, 'exhibition');
+    x.status = 'sold';
+    showToast('Venta registrada desde exhibición');
+  } else if (action === 'returned') {
+    if (p) p.sizes[x.size] = (Number(p.sizes[x.size]) || 0) + 1;
+    x.status = 'returned';
+    showToast('Par devuelto al inventario', 'info');
+  }
+  saveData();
+  renderAll();
+}
+
+/* =========================================================
+   RENDER: SALES
+   ========================================================= */
+function renderSales() {
+  const items = [...DATA.sales].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const totalRevenue = DATA.sales.reduce((s, x) => s + x.price, 0);
+  const totalCost = DATA.sales.reduce((s, x) => s + x.cost, 0);
+  const totalProfit = totalRevenue - totalCost;
+
+  document.getElementById('salesSummary').innerHTML = `
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <p class="text-[11px] text-slate-400 mb-1">Ingresos</p>
+      <p class="text-lg font-display font-bold text-white">${money(totalRevenue)}</p>
+    </div>
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <p class="text-[11px] text-slate-400 mb-1">Costos</p>
+      <p class="text-lg font-display font-bold text-white">${money(totalCost)}</p>
+    </div>
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <p class="text-[11px] text-slate-400 mb-1">Ganancia neta</p>
+      <p class="text-lg font-display font-bold text-emerald">${money(totalProfit)}</p>
+    </div>
+  `;
+
+  document.getElementById('salesEmpty').classList.toggle('hidden', items.length !== 0);
+  document.getElementById('salesTableBody').innerHTML = items.map(s => `
+    <tr class="border-b border-border/60 last:border-0 hover:bg-panel2/50">
+      <td class="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">${fmtDate(s.date)}</td>
+      <td class="px-4 py-3 text-slate-200">${escapeHtml(s.brand)} ${escapeHtml(s.model)}${s.color ? ' <span class=\"text-slate-500\">— ' + escapeHtml(s.color) + '</span>' : ''}</td>
+      <td class="px-4 py-3 text-slate-300">${s.size}</td>
+      <td class="px-4 py-3"><span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${s.source === 'direct' ? 'text-emerald bg-emerald/10 border-emerald/30' : s.source === 'loan' ? 'text-indigo bg-indigo/10 border-indigo/30' : 'text-amber-400 bg-amber-500/10 border-amber-500/30'}">${sourceLabel(s.source)}</span></td>
+      <td class="px-4 py-3 text-right text-slate-300">${money(s.cost)}</td>
+      <td class="px-4 py-3 text-right text-slate-200 font-medium">${money(s.price)}</td>
+      <td class="px-4 py-3 text-right font-semibold ${s.profit >= 0 ? 'text-emerald' : 'text-red-400'}">${money(s.profit)}</td>
+      <td class="px-4 py-3 text-right">
+        <button onclick="annulSale(${s.id})" class="text-[11px] text-red-400 hover:underline font-semibold">Anular</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function annulSale(saleId) {
+  const s = DATA.sales.find(x => x.id === saleId);
+  confirmAction('Anular venta', `¿Anular la venta de ${s.brand} ${s.model} talla ${s.size}? El par volverá al inventario disponible y se reajustarán los totales.`, () => {
+    const p = getProduct(s.productId);
+    if (p) p.sizes[s.size] = (Number(p.sizes[s.size]) || 0) + 1;
+    DATA.sales = DATA.sales.filter(x => x.id !== saleId);
+    saveData();
+    renderAll();
+    showToast('Venta anulada, totales reajustados', 'info');
+  }, 'Anular venta');
+}
+
+/* =========================================================
+   BACKUP / RESTORE / RESET
+   ========================================================= */
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `pasofino_backup_${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast('Copia de seguridad descargada');
+});
+
+document.getElementById('importInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      confirmAction('Importar copia de seguridad', 'Esto reemplazará todos los datos actuales por los del archivo importado. ¿Continuar?', () => {
+        DATA = {
+          products: parsed.products || [],
+          loans: parsed.loans || [],
+          exhibitions: parsed.exhibitions || [],
+          sales: parsed.sales || [],
+          nextId: parsed.nextId || 1,
+        };
+        saveData();
+        renderAll();
+        showToast('Datos restaurados correctamente');
+      }, 'Importar y reemplazar');
+    } catch (err) {
+      showToast('Archivo inválido o corrupto', 'error');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  confirmAction('Reiniciar sistema', 'Se borrarán permanentemente todos los productos, préstamos, exhibiciones y ventas guardados en este dispositivo. Esta acción no se puede deshacer.', () => {
+    DATA = structuredClone(DEFAULT_DATA);
+    saveData();
+    renderAll();
+    showToast('Sistema reiniciado', 'info');
+  }, 'Sí, borrar todo');
+});
+
+/* ---------------- add product buttons ---------------- */
+['addProductTopBtn', 'addProductInvBtn', 'addProductDashBtn'].forEach(id => {
+  document.getElementById(id).addEventListener('click', () => openProductModal());
+});
+
+/* ---------------- render orchestrator ---------------- */
+function renderAll() {
+  if (currentTab === 'dashboard') renderDashboard();
+  if (currentTab === 'inventory') renderInventory();
+  if (currentTab === 'loans') renderLoans();
+  if (currentTab === 'exhibitions') renderExhibitions();
+  if (currentTab === 'sales') renderSales();
+}
+renderAll();
+
+/* =========================================================
+   PWA: registro de Service Worker
+   ========================================================= */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.warn('No se pudo registrar el Service Worker:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
