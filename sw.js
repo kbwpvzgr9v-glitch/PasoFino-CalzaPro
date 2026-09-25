@@ -1,5 +1,5 @@
 // PasoFino — CalzaControl · Service Worker
-const CACHE_NAME = 'pasofino-calzacontrol-v2';
+const CACHE_NAME = 'pasofino-calzacontrol-v3';
 const ASSETS = [
   './',
   './index.html',
