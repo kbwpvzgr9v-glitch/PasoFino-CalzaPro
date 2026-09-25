@@ -84,11 +84,15 @@
       <button data-tab="loans" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Préstamos</button>
       <button data-tab="exhibitions" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Exhibiciones</button>
       <button data-tab="sales" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Ventas</button>
+      <button data-tab="conspires" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Conspires</button>
       <button data-tab="settings" class="tab-btn px-4 py-1.5 rounded-full text-sm font-medium text-slate-300 border border-transparent">Config</button>
     </nav>
     <button id="addProductTopBtn" class="hidden sm:flex items-center gap-1.5 bg-emerald hover:bg-emerald-dim text-base font-semibold text-sm px-4 py-2 rounded-full transition">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
       Nuevo producto
+    </button>
+    <button id="settingsTopBtn" onclick="switchTab('settings')" aria-label="Configuración" class="flex sm:hidden items-center justify-center w-9 h-9 rounded-full bg-panel border border-border text-slate-300 shrink-0">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </div>
 </header>
@@ -114,6 +118,10 @@
   <button data-tab="sales" class="tab-btn-mobile flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-slate-400 text-[10px] font-medium w-full">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
     Ventas
+  </button>
+  <button data-tab="conspires" class="tab-btn-mobile flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg text-slate-400 text-[10px] font-medium w-full">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M8 21H3v-5M21 3l-7.5 7.5M3 21l7.5-7.5"/></svg>
+    Conspires
   </button>
 </nav>
 
@@ -238,6 +246,32 @@
     </div>
   </section>
 
+  <!-- ---------- CONSPIRES ---------- -->
+  <section id="tab-conspires" class="tab-panel hidden">
+    <div class="flex items-center justify-between gap-3 mb-1">
+      <h2 class="text-xl font-display font-bold text-white">Conspires</h2>
+      <button id="addConspireBtn" class="flex items-center gap-1.5 bg-indigo hover:bg-indigo-dim text-white font-semibold text-sm px-4 py-2 rounded-full transition shrink-0">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Nuevo
+      </button>
+    </div>
+    <p class="text-sm text-slate-400 mb-4">Pares que no son de tu inventario: te los prestó otro local para venderlos. Aquí llevas cuánto te lo dejaron, en cuánto lo vendiste y a quién le debes pagar.</p>
+
+    <div id="conspiresSummary" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5"></div>
+
+    <div class="mb-5">
+      <h3 class="font-display font-semibold text-white text-sm mb-2">Resumen mensual de ganancia</h3>
+      <div id="conspiresMonthly" class="bg-panel border border-border rounded-2xl divide-y divide-border/60"></div>
+    </div>
+
+    <div id="conspiresEmpty" class="hidden text-center py-16 border border-dashed border-border rounded-2xl">
+      <p class="text-slate-400 text-sm">Aún no has registrado ningún par conspirado.</p>
+      <button onclick="openConspireModal()" class="mt-3 text-indigo text-sm font-semibold hover:underline">Agregar el primero →</button>
+    </div>
+
+    <div id="conspiresList" class="grid grid-cols-1 gap-3"></div>
+  </section>
+
   <!-- ---------- SETTINGS ---------- -->
   <section id="tab-settings" class="tab-panel hidden max-w-2xl">
     <h2 class="text-xl font-display font-bold text-white mb-1">Configuración y respaldo</h2>
@@ -296,7 +330,7 @@
 const STORAGE_KEY = 'pasofino_data_v1';
 const SIZES = Array.from({length: 11}, (_, i) => 35 + i); // 35..45
 
-const DEFAULT_DATA = { products: [], loans: [], exhibitions: [], sales: [], nextId: 1 };
+const DEFAULT_DATA = { products: [], loans: [], exhibitions: [], sales: [], conspires: [], nextId: 1 };
 
 let DATA = loadData();
 let currentTab = 'dashboard';
@@ -312,6 +346,7 @@ function loadData() {
       loans: parsed.loans || [],
       exhibitions: parsed.exhibitions || [],
       sales: parsed.sales || [],
+      conspires: parsed.conspires || [],
       nextId: parsed.nextId || 1,
     };
   } catch (e) {
@@ -352,6 +387,31 @@ function getProduct(id) { return DATA.products.find(p => p.id === id); }
 function totalStock(p) { return SIZES.reduce((s, sz) => s + (Number(p.sizes[sz]) || 0), 0); }
 function escapeHtml(str) {
   return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function resizeImageToDataUrl(file, maxSize = 480, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        const scale = Math.min(1, maxSize / Math.max(width, height));
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function showToast(msg, type = 'success') {
@@ -439,14 +499,28 @@ function openProductModal(productId = null) {
         </button>
       </div>
       <form id="productForm" class="space-y-4">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Marca</label>
-            <input required id="f_brand" value="${editing ? escapeHtml(editing.brand) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Nike">
+        <div class="flex gap-4">
+          <div class="shrink-0">
+            <label class="block text-xs text-slate-400 mb-1">Foto</label>
+            <button type="button" id="photoTrigger" class="relative w-24 h-24 aspect-square rounded-xl border border-dashed border-border bg-panel2 overflow-hidden flex items-center justify-center">
+              <img id="photoPreviewImg" src="${editing && editing.photo ? editing.photo : ''}" class="${editing && editing.photo ? '' : 'hidden'} absolute inset-0 w-full h-full object-cover">
+              <span id="photoPlaceholder" class="${editing && editing.photo ? 'hidden' : ''} flex flex-col items-center gap-1 text-slate-500">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <span class="text-[10px]">Agregar</span>
+              </span>
+            </button>
+            <input type="file" id="f_photo_file" accept="image/*" class="hidden">
+            <button type="button" id="removePhotoBtn" class="${editing && editing.photo ? '' : 'hidden'} mt-1.5 text-[11px] text-red-400 hover:underline w-24 text-center">Quitar foto</button>
           </div>
-          <div>
-            <label class="block text-xs text-slate-400 mb-1">Modelo</label>
-            <input required id="f_model" value="${editing ? escapeHtml(editing.model) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Air Force 1">
+          <div class="flex-1 space-y-3">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Marca</label>
+              <input required id="f_brand" value="${editing ? escapeHtml(editing.brand) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Nike">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Modelo</label>
+              <input required id="f_model" value="${editing ? escapeHtml(editing.model) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-emerald" placeholder="Air Force 1">
+            </div>
           </div>
         </div>
         <div>
@@ -477,6 +551,33 @@ function openProductModal(productId = null) {
     </div>
   `);
 
+  let pendingPhoto = editing && editing.photo ? editing.photo : null;
+
+  document.getElementById('photoTrigger').addEventListener('click', () => {
+    document.getElementById('f_photo_file').click();
+  });
+
+  document.getElementById('f_photo_file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    resizeImageToDataUrl(file, 480, 0.75).then((dataUrl) => {
+      pendingPhoto = dataUrl;
+      document.getElementById('photoPreviewImg').src = dataUrl;
+      document.getElementById('photoPreviewImg').classList.remove('hidden');
+      document.getElementById('photoPlaceholder').classList.add('hidden');
+      document.getElementById('removePhotoBtn').classList.remove('hidden');
+    }).catch(() => showToast('No se pudo procesar la imagen', 'error'));
+  });
+
+  document.getElementById('removePhotoBtn').addEventListener('click', () => {
+    pendingPhoto = null;
+    document.getElementById('f_photo_file').value = '';
+    document.getElementById('photoPreviewImg').src = '';
+    document.getElementById('photoPreviewImg').classList.add('hidden');
+    document.getElementById('photoPlaceholder').classList.remove('hidden');
+    document.getElementById('removePhotoBtn').classList.add('hidden');
+  });
+
   document.getElementById('productForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const sizes = {};
@@ -489,6 +590,7 @@ function openProductModal(productId = null) {
       color: document.getElementById('f_color').value.trim(),
       cost: Math.max(0, parseFloat(document.getElementById('f_cost').value) || 0),
       price: Math.max(0, parseFloat(document.getElementById('f_price').value) || 0),
+      photo: pendingPhoto,
       sizes,
     };
     if (editing) {
@@ -641,9 +743,14 @@ function openSellModal(productId) {
             ${availableSizes.map(sz => `<option value="${sz}">Talla ${sz} · stock: ${p.sizes[sz]}</option>`).join('')}
           </select>
         </div>
-        <div class="bg-panel2 border border-border rounded-lg px-3 py-2.5 text-sm flex justify-between">
-          <span class="text-slate-400">Precio de venta</span>
-          <span class="font-semibold text-white">${money(p.price)}</span>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Precio de venta</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+            <input type="number" min="0" step="1" id="s_price" value="${p.price}"
+              class="w-full bg-panel2 border border-border rounded-lg pl-7 pr-3 py-2.5 text-sm font-semibold text-white focus:border-emerald">
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">Precio de lista: ${money(p.price)} · ajústalo si esta venta fue por otro valor</p>
         </div>
         <button type="submit" class="w-full bg-emerald hover:bg-emerald-dim text-base font-semibold text-sm py-2.5 rounded-xl transition">Confirmar venta</button>
       </form>
@@ -653,9 +760,10 @@ function openSellModal(productId) {
   document.getElementById('sellForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const size = parseInt(document.getElementById('s_size').value);
+    const salePrice = Math.max(0, parseFloat(document.getElementById('s_price').value) || 0);
     if ((p.sizes[size] || 0) <= 0) { showToast('Sin stock en esa talla', 'error'); return; }
     p.sizes[size] -= 1;
-    registerSale(p, size, 'direct');
+    registerSale(p, size, 'direct', salePrice);
     saveData();
     closeModal();
     renderAll();
@@ -663,7 +771,8 @@ function openSellModal(productId) {
   });
 }
 
-function registerSale(product, size, source) {
+function registerSale(product, size, source, salePrice = null) {
+  const price = salePrice !== null && !Number.isNaN(salePrice) ? salePrice : product.price;
   DATA.sales.push({
     id: nextId(),
     productId: product.id,
@@ -671,8 +780,8 @@ function registerSale(product, size, source) {
     source, // 'direct' | 'loan' | 'exhibition'
     date: new Date().toISOString(),
     cost: product.cost,
-    price: product.price,
-    profit: product.price - product.cost,
+    price: price,
+    profit: price - product.cost,
     brand: product.brand, model: product.model, color: product.color,
   });
 }
@@ -774,17 +883,22 @@ function renderInventory() {
     return `
     <div class="bg-panel border border-border rounded-2xl p-4">
       <div class="flex flex-wrap items-start justify-between gap-3">
-        <div class="min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <h4 class="font-display font-semibold text-white">${escapeHtml(p.brand)} ${escapeHtml(p.model)}</h4>
-            ${p.color ? `<span class="text-xs text-slate-400">${escapeHtml(p.color)}</span>` : ''}
+        <div class="flex items-start gap-3 min-w-0">
+          <div class="w-14 h-14 aspect-square rounded-lg overflow-hidden bg-panel2 border border-border shrink-0 flex items-center justify-center">
+            ${p.photo ? `<img src="${p.photo}" class="w-full h-full object-cover">` : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-slate-600"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`}
           </div>
-          <div class="flex items-center gap-3 mt-1 text-xs text-slate-400">
-            <span>Costo ${money(p.cost)}</span>
-            <span>·</span>
-            <span>Venta ${money(p.price)}</span>
-            <span>·</span>
-            <span class="${stock > 0 ? 'text-emerald' : 'text-red-400'} font-medium">${stock} disponibles</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h4 class="font-display font-semibold text-white">${escapeHtml(p.brand)} ${escapeHtml(p.model)}</h4>
+              ${p.color ? `<span class="text-xs text-slate-400">${escapeHtml(p.color)}</span>` : ''}
+            </div>
+            <div class="flex items-center gap-3 mt-1 text-xs text-slate-400 flex-wrap">
+              <span>Costo ${money(p.cost)}</span>
+              <span>·</span>
+              <span>Venta ${money(p.price)}</span>
+              <span>·</span>
+              <span class="${stock > 0 ? 'text-emerald' : 'text-red-400'} font-medium">${stock} disponibles</span>
+            </div>
           </div>
         </div>
         <div class="flex flex-wrap gap-1.5 shrink-0">
@@ -957,6 +1071,235 @@ function annulSale(saleId) {
 }
 
 /* =========================================================
+   CONSPIRES — pares prestados de otro local para vender
+   ========================================================= */
+function openConspireModal(conspireId = null) {
+  const editing = conspireId ? DATA.conspires.find(c => c.id === conspireId) : null;
+
+  openModal(`
+    <div class="p-5 sm:p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display font-bold text-lg text-white">${editing ? 'Editar conspire' : 'Nuevo conspire'}</h3>
+        <button onclick="closeModal()" class="text-slate-500 hover:text-slate-300">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="conspireForm" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Marca</label>
+            <input required id="c_brand" value="${editing ? escapeHtml(editing.brand) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-indigo" placeholder="Jordan">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Modelo</label>
+            <input required id="c_model" value="${editing ? escapeHtml(editing.model) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-indigo" placeholder="Retro 1">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Color</label>
+            <input id="c_color" value="${editing ? escapeHtml(editing.color || '') : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-indigo" placeholder="Opcional">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1">Talla</label>
+            <input id="c_size" value="${editing ? escapeHtml(editing.size || '') : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-indigo" placeholder="42">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Local que te lo dejó</label>
+          <input required id="c_local" value="${editing ? escapeHtml(editing.local) : ''}" class="w-full bg-panel2 border border-border rounded-lg px-3 py-2 text-sm focus:border-indigo" placeholder="Ej: Zapatería El Paso">
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">¿En cuánto te lo dejaron? (costo)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+            <input required type="number" min="0" id="c_cost" value="${editing ? editing.cost : ''}" class="w-full bg-panel2 border border-border rounded-lg pl-7 pr-3 py-2.5 text-sm focus:border-indigo" placeholder="0">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">¿En cuánto lo vendiste? <span class="text-slate-500">(déjalo vacío si aún no se vende)</span></label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+            <input type="number" min="0" id="c_sale" value="${editing && editing.salePrice != null ? editing.salePrice : ''}" class="w-full bg-panel2 border border-border rounded-lg pl-7 pr-3 py-2.5 text-sm focus:border-indigo" placeholder="0">
+          </div>
+        </div>
+        <div class="flex gap-3 pt-2">
+          ${editing ? `<button type="button" id="deleteConspireBtn" class="px-4 py-2.5 rounded-xl border border-red-500/40 text-red-400 text-sm font-semibold">Eliminar</button>` : ''}
+          <button type="submit" class="flex-1 bg-indigo hover:bg-indigo-dim text-white font-semibold text-sm py-2.5 rounded-xl transition">
+            ${editing ? 'Guardar cambios' : 'Registrar conspire'}
+          </button>
+        </div>
+      </form>
+    </div>
+  `);
+
+  document.getElementById('conspireForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const saleRaw = document.getElementById('c_sale').value;
+    const salePrice = saleRaw === '' ? null : Math.max(0, parseFloat(saleRaw) || 0);
+    const payload = {
+      brand: document.getElementById('c_brand').value.trim(),
+      model: document.getElementById('c_model').value.trim(),
+      color: document.getElementById('c_color').value.trim(),
+      size: document.getElementById('c_size').value.trim(),
+      local: document.getElementById('c_local').value.trim(),
+      cost: Math.max(0, parseFloat(document.getElementById('c_cost').value) || 0),
+      salePrice,
+    };
+    if (editing) {
+      const wasPending = editing.status === 'pending';
+      Object.assign(editing, payload);
+      if (salePrice !== null && wasPending) {
+        editing.status = 'sold';
+        editing.soldDate = new Date().toISOString();
+      } else if (salePrice === null) {
+        editing.status = 'pending';
+        editing.soldDate = null;
+      }
+      showToast('Conspire actualizado');
+    } else {
+      DATA.conspires.push({
+        id: nextId(),
+        ...payload,
+        date: new Date().toISOString(),
+        status: salePrice !== null ? 'sold' : 'pending',
+        soldDate: salePrice !== null ? new Date().toISOString() : null,
+      });
+      showToast('Conspire registrado');
+    }
+    saveData();
+    closeModal();
+    renderAll();
+  });
+
+  if (editing) {
+    document.getElementById('deleteConspireBtn').addEventListener('click', () => {
+      confirmAction('Eliminar conspire', `¿Eliminar el registro de ${editing.brand} ${editing.model}? Esta acción no se puede deshacer.`, () => {
+        DATA.conspires = DATA.conspires.filter(c => c.id !== editing.id);
+        saveData();
+        renderAll();
+        showToast('Conspire eliminado', 'info');
+      }, 'Eliminar');
+    });
+  }
+}
+
+function markConspireSold(conspireId) {
+  const c = DATA.conspires.find(x => x.id === conspireId);
+  openModal(`
+    <div class="p-5 sm:p-6">
+      <h3 class="font-display font-bold text-lg text-white mb-1">Marcar como vendido</h3>
+      <p class="text-sm text-slate-400 mb-4">${escapeHtml(c.brand)} ${escapeHtml(c.model)}${c.size ? ' · T' + escapeHtml(c.size) : ''} — te lo dejaron en ${money(c.cost)}</p>
+      <form id="conspireSoldForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">¿En cuánto lo vendiste?</label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+            <input required type="number" min="0" id="cs_sale" class="w-full bg-panel2 border border-border rounded-lg pl-7 pr-3 py-2.5 text-sm focus:border-indigo" placeholder="0" autofocus>
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-emerald hover:bg-emerald-dim text-base font-semibold text-sm py-2.5 rounded-xl transition">Confirmar venta</button>
+      </form>
+    </div>
+  `);
+  document.getElementById('conspireSoldForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    c.salePrice = Math.max(0, parseFloat(document.getElementById('cs_sale').value) || 0);
+    c.status = 'sold';
+    c.soldDate = new Date().toISOString();
+    saveData();
+    closeModal();
+    renderAll();
+    showToast('Venta de conspire registrada');
+  });
+}
+
+function deleteConspire(conspireId) {
+  const c = DATA.conspires.find(x => x.id === conspireId);
+  confirmAction('Eliminar conspire', `¿Eliminar el registro de ${c.brand} ${c.model}?`, () => {
+    DATA.conspires = DATA.conspires.filter(x => x.id !== conspireId);
+    saveData();
+    renderAll();
+    showToast('Conspire eliminado', 'info');
+  }, 'Eliminar');
+}
+
+function monthKey(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+function monthLabel(key) {
+  const [y, m] = key.split('-').map(Number);
+  const d = new Date(y, m - 1, 1);
+  const label = d.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function renderConspires() {
+  const items = [...DATA.conspires].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const pending = items.filter(c => c.status === 'pending');
+  const sold = items.filter(c => c.status === 'sold');
+  const totalProfit = sold.reduce((s, c) => s + (c.salePrice - c.cost), 0);
+
+  document.getElementById('conspiresSummary').innerHTML = `
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <p class="text-[11px] text-slate-400 mb-1">Pendientes por vender</p>
+      <p class="text-xl font-display font-bold text-white">${pending.length}</p>
+    </div>
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <p class="text-[11px] text-slate-400 mb-1">Vendidos</p>
+      <p class="text-xl font-display font-bold text-white">${sold.length}</p>
+    </div>
+    <div class="bg-panel border border-border rounded-2xl p-4 col-span-2 sm:col-span-1">
+      <p class="text-[11px] text-slate-400 mb-1">Ganancia total</p>
+      <p class="text-xl font-display font-bold text-emerald">${money(totalProfit)}</p>
+    </div>
+  `;
+
+  const byMonth = {};
+  sold.forEach(c => {
+    const key = monthKey(c.soldDate);
+    byMonth[key] = (byMonth[key] || 0) + (c.salePrice - c.cost);
+  });
+  const monthKeys = Object.keys(byMonth).sort().reverse();
+  document.getElementById('conspiresMonthly').innerHTML = monthKeys.length ? monthKeys.map(k => `
+    <div class="flex items-center justify-between px-4 py-3">
+      <span class="text-sm text-slate-300 capitalize">${monthLabel(k)}</span>
+      <span class="text-sm font-semibold text-emerald">${money(byMonth[k])}</span>
+    </div>
+  `).join('') : `<p class="text-sm text-slate-500 text-center py-6">Todavía no hay ventas de conspires para resumir</p>`;
+
+  document.getElementById('conspiresEmpty').classList.toggle('hidden', items.length !== 0);
+  document.getElementById('conspiresList').innerHTML = items.map(c => {
+    const profit = c.status === 'sold' ? c.salePrice - c.cost : null;
+    return `
+    <div class="bg-panel border border-border rounded-2xl p-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h4 class="font-display font-semibold text-white">${escapeHtml(c.brand)} ${escapeHtml(c.model)}</h4>
+            ${c.color ? `<span class="text-xs text-slate-400">${escapeHtml(c.color)}</span>` : ''}
+            ${c.size ? `<span class="text-xs text-slate-400">T${escapeHtml(c.size)}</span>` : ''}
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${c.status === 'sold' ? 'text-emerald bg-emerald/10 border-emerald/30' : 'text-amber-400 bg-amber-500/10 border-amber-500/30'}">${c.status === 'sold' ? 'Vendido' : 'Pendiente'}</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">Local: <span class="text-slate-300">${escapeHtml(c.local)}</span> · Te lo dejaron en ${money(c.cost)}</p>
+          ${c.status === 'sold' ? `<p class="text-xs text-slate-400 mt-0.5">Vendido en ${money(c.salePrice)} · Ganancia <span class="font-semibold ${profit >= 0 ? 'text-emerald' : 'text-red-400'}">${money(profit)}</span></p>` : ''}
+          <p class="text-[11px] text-slate-500 mt-1">Recibido: ${fmtDate(c.date)}${c.soldDate ? ' · Vendido: ' + fmtDate(c.soldDate) : ''}</p>
+        </div>
+        <div class="flex gap-1.5 shrink-0">
+          ${c.status === 'pending' ? `<button onclick="markConspireSold(${c.id})" class="px-3 py-1.5 rounded-lg bg-emerald/10 text-emerald border border-emerald/30 text-xs font-semibold hover:bg-emerald/20">Vender</button>` : ''}
+          <button onclick="openConspireModal(${c.id})" class="px-3 py-1.5 rounded-lg bg-panel2 text-slate-300 border border-border text-xs font-semibold hover:bg-border">Editar</button>
+          <button onclick="deleteConspire(${c.id})" class="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/30 text-xs font-semibold hover:bg-red-500/20">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+document.getElementById('addConspireBtn').addEventListener('click', () => openConspireModal());
+
+/* =========================================================
    BACKUP / RESTORE / RESET
    ========================================================= */
 document.getElementById('exportBtn').addEventListener('click', () => {
@@ -986,6 +1329,7 @@ document.getElementById('importInput').addEventListener('change', (e) => {
           loans: parsed.loans || [],
           exhibitions: parsed.exhibitions || [],
           sales: parsed.sales || [],
+          conspires: parsed.conspires || [],
           nextId: parsed.nextId || 1,
         };
         saveData();
@@ -1021,6 +1365,7 @@ function renderAll() {
   if (currentTab === 'loans') renderLoans();
   if (currentTab === 'exhibitions') renderExhibitions();
   if (currentTab === 'sales') renderSales();
+  if (currentTab === 'conspires') renderConspires();
 }
 renderAll();
 
