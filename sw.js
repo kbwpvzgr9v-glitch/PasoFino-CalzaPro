@@ -1,20 +1,16 @@
 // PasoFino — CalzaControl · Service Worker
-const CACHE_NAME = 'pasofino-calzacontrol-v4';
+const CACHE_NAME = 'pasofino-calzacontrol-v5';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       Promise.all(
-        ASSETS.map((url) =>
-          fetch(url, { mode: 'no-cors' }).then((res) => cache.put(url, res)).catch(() => {})
-        )
+        ASSETS.map((url) => fetch(url).then((res) => cache.put(url, res)).catch(() => {}))
       )
     )
   );
