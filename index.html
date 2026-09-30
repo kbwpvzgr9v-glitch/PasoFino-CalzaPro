@@ -18,6 +18,21 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 
 <script src="https://cdn.tailwindcss.com"></script>
+<script>
+  // Si el CSS no cargó a tiempo (ej. hueco de señal al abrir desde el ícono),
+  // recarga automáticamente una vez para intentar de nuevo.
+  (function () {
+    try {
+      var alreadyTried = sessionStorage.getItem('pf_auto_reload');
+      setTimeout(function () {
+        if (typeof window.tailwind === 'undefined' && !alreadyTried) {
+          sessionStorage.setItem('pf_auto_reload', '1');
+          location.reload();
+        }
+      }, 2500);
+    } catch (e) {}
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
